@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Sponsorship System - Subscription Model</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Kanit', sans-serif; }
+        .font-inter { font-family: 'Inter', sans-serif; }
+        [x-cloak] { display: none !important; }
+        
+        .tier-card:hover { transform: translateY(-5px); }
+        .feature-row:nth-child(even) { background-color: rgba(248, 250, 252, 0.8); }
+    </style>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('setupData', () => ({
+                activeTab: 'comparison',
+                // Feature Matrix Data
+                features: [
+                    { name: 'พื้นที่วางบูธกิจกรรม (7 วัน)', s: '3x2m (4 ครั้ง/ปี)', m: '3x4m (8 ครั้ง/ปี)', l: '3x4m (12 ครั้ง/ปี)', cat: 'Events' },
+                    { name: 'ยิง Ads Facebook โปรโมทแบรนด์', s: 'งบ 8,000.-/ปี', m: 'งบ 15,000.-/ปี', l: 'งบ 30,000.-/ปี', cat: 'Digital' },
+                    { name: 'สื่อป้ายไวนิล (Vinyl)', s: 'จุดทางออก 2 จุด', m: 'จุดทางออก 2 จุด', l: 'จุดทางออก 2 จุด', cat: 'Venues' },
+                    { name: 'Billboard / ป้ายขนาดใหญ่', s: '-', m: 'จุด Premium ในห้าง', l: 'หน้าห้าง / ทางเข้าหลัก', cat: 'Venues' },
+                    { name: 'Social Media Content', s: '4 โพสต์/ปี', m: '12 โพสต์ + 4 TikTok', l: 'ทุกเดือน + 4 Live พิเศษ', cat: 'Digital' },
+                    { name: 'งานสัมมนา/อบรมช่าง', s: '-', m: 'ร่วมงาน 2 ครั้ง/ปี', l: 'ร่วมงาน 2 ครั้ง/ปี', cat: 'Events' },
+                    { name: 'สิทธิพิเศษ Dinner Talk VIP', s: '-', m: '-', l: 'สิทธิ์ร่วม 2 ครั้ง/ปี', cat: 'Exclusive' },
+                    { name: 'รถแห่ประชาสัมพันธ์รอบเมือง', s: '-', m: '-', l: '2 ครั้ง/ปี', cat: 'Events' },
+                    { name: 'โลโก้บนสินค้าสมนาคุณ (เสื้อ/ถุง)', s: 'โบรชัวร์เท่านั้น', m: 'โบรชัวร์ + เสื้อช่าง', l: 'ครบทุกสื่อ + ถุงสินค้า', cat: 'Prints' },
+                ],
+                suppliers: [
+                    {
+                        id: 'SPN-26-001',
+                        name: 'TOA Paint (Thailand)',
+                        package: 'Platinum',
+                        quotas: [
+                            { label: 'กิจกรรมออกบูธ (7 วัน)', sub: 'พื้นที่ 3x4m รายเดือน', total: 12, used: 3 },
+                            { label: 'งบยิง Ads Facebook', sub: 'งบประมาณรวม 30,000.-', total: 30000, used: 8500, isCurrency: true },
+                            { label: 'TikTok Product Review', sub: 'คลิปรีวิวสินค้าเชิงเทคนิค', total: 8, used: 2 },
+                            { label: 'รถแห่/Troop', sub: 'ประชาสัมพันธ์รอบพื้นที่', total: 2, used: 1 },
+                            { label: 'งานสัมมนา/Dinner Talk', sub: 'สิทธิ์เข้าร่วมระดับ Platinum', total: 4, used: 2 }
+                        ]
+                    },
+                    {
+                        id: 'SPN-26-002',
+                        name: 'ปูนตราเสือ (SCG)',
+                        package: 'Gold',
+                        quotas: [
+                            { label: 'กิจกรรมออกบูธ (7 วัน)', sub: 'พื้นที่ 3x4m ไตรมาสละ 2 ครั้ง', total: 8, used: 2 },
+                            { label: 'งบยิง Ads Facebook', sub: 'งบประมาณรวม 15,000.-', total: 15000, used: 4000, isCurrency: true },
+                            { label: 'TikTok Product Review', sub: 'คลิปรีวิวสั้น', total: 4, used: 1 },
+                            { label: 'งานอบรมช่าง', sub: 'สิทธิ์สาธิตสินค้า', total: 2, used: 0 }
+                        ]
+                    }
+                ],
+                calculateProgress(supplier) {
+                    const total = supplier.quotas.reduce((acc, q) => acc + q.total, 0);
+                    const used = supplier.quotas.reduce((acc, q) => acc + q.used, 0);
+                    return Math.round((used / total) * 100);
+                },
+                initIcons() {
+                    setTimeout(() => lucide.createIcons(), 50);
+                }
+            }))
+        });
+    </script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900" x-data="setupData" x-init="initIcons()">
+
+    <!-- Sidebar -->
+    <nav class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white p-6 z-50">
+        <div class="mb-10 text-xl font-bold border-b border-slate-700 pb-4">
+            <span class="text-blue-400 font-black">RETAIL</span> MARKETING
+        </div>
+        <ul class="space-y-4">
+            <li @click="activeTab = 'comparison'; initIcons()" 
+                :class="activeTab === 'comparison' ? 'bg-blue-600' : 'hover:bg-slate-800'"
+                class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Package Comparison
+            </li>
+            <li @click="activeTab = 'tracker'; initIcons()" 
+                :class="activeTab === 'tracker' ? 'bg-blue-600' : 'hover:bg-slate-800'"
+                class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all">
+                <i data-lucide="list-checks" class="w-5 h-5"></i> Quota Tracker
+            </li>
+            <li @click="activeTab = 'report'; initIcons()" 
+                :class="activeTab === 'report' ? 'bg-blue-600' : 'hover:bg-slate-800'"
+                class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all">
+                <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Performance Report
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="ml-64 p-8 min-h-screen">
+
+        <!-- Tab 1: Comparison Table (Subscription Style) -->
+        <div x-show="activeTab === 'comparison'" x-cloak x-transition>
+            <div class="mb-10">
+                <h1 class="text-4xl font-black text-slate-900 uppercase tracking-tight">Marketing Partner Packages</h1>
+                <p class="text-slate-500 mt-2 text-lg italic">เลือกแพ็กเกจที่ใช่ เพื่อการเติบโตที่เหนือกว่าในปี 2026</p>
+            </div>
+
+            <!-- Price Cards Quick View -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="bg-white p-8 rounded-[2rem] border-2 border-slate-200 text-center shadow-sm">
+                    <h3 class="font-bold text-slate-400 uppercase tracking-widest text-xs">Starter</h3>
+                    <div class="text-2xl font-black mt-1">Silver (S)</div>
+                    <div class="text-4xl font-black text-blue-600 mt-4 font-inter">฿39,000</div>
+                </div>
+                <div class="bg-white p-8 rounded-[2rem] border-2 border-yellow-400 text-center shadow-xl transform scale-105 relative">
+                    <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-[10px] font-black uppercase">Recommended</span>
+                    <h3 class="font-bold text-slate-400 uppercase tracking-widest text-xs">Value Growth</h3>
+                    <div class="text-2xl font-black mt-1">Gold (M)</div>
+                    <div class="text-4xl font-black text-blue-600 mt-4 font-inter">฿69,000</div>
+                </div>
+                <div class="bg-white p-8 rounded-[2rem] border-2 border-blue-600 text-center shadow-sm">
+                    <h3 class="font-bold text-slate-400 uppercase tracking-widest text-xs">Market Leader</h3>
+                    <div class="text-2xl font-black mt-1">Platinum (L)</div>
+                    <div class="text-4xl font-black text-blue-600 mt-4 font-inter">฿99,999</div>
+                </div>
+            </div>
+
+            <!-- Feature Matrix Table -->
+            <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden mb-10">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-slate-900 text-white">
+                            <th class="px-8 py-6 text-left font-black uppercase tracking-widest text-sm">สิทธิประโยชน์ (Benefit Matrix)</th>
+                            <th class="px-8 py-6 text-center font-black uppercase tracking-widest text-sm">Silver</th>
+                            <th class="px-8 py-6 text-center font-black uppercase tracking-widest text-sm bg-blue-800">Gold</th>
+                            <th class="px-8 py-6 text-center font-black uppercase tracking-widest text-sm">Platinum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="f in features" :key="f.name">
+                            <tr class="feature-row hover:bg-slate-50 transition-colors">
+                                <td class="px-8 py-5 border-b border-slate-100">
+                                    <div class="font-bold text-slate-700" x-text="f.name"></div>
+                                    <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5" x-text="f.cat"></div>
+                                </td>
+                                <td class="px-8 py-5 text-center border-b border-slate-100 text-sm font-medium text-slate-500" x-text="f.s"></td>
+                                <td class="px-8 py-5 text-center border-b border-slate-100 text-sm font-bold text-blue-700 bg-blue-50/30" x-text="f.m"></td>
+                                <td class="px-8 py-5 text-center border-b border-slate-100 text-sm font-black text-slate-900" x-text="f.l"></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 2: Quota Tracker (Realistic Tracking) -->
+        <div x-show="activeTab === 'tracker'" x-cloak x-transition>
+            <div class="flex justify-between items-center mb-10">
+                <h1 class="text-3xl font-black text-slate-900 uppercase">Supplier Quota Tracker</h1>
+                <button class="bg-slate-900 text-white px-6 py-3 rounded-2xl flex items-center gap-2 hover:bg-blue-600 transition shadow-lg">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Add Supplier
+                </button>
+            </div>
+
+            <div class="space-y-8">
+                <template x-for="supplier in suppliers" :key="supplier.id">
+                    <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+                        <!-- Supplier Info -->
+                        <div class="p-8 flex justify-between items-center bg-slate-50/50">
+                            <div class="flex items-center gap-6">
+                                <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center border border-slate-200 font-black text-blue-600 italic">LOGO</div>
+                                <div>
+                                    <div class="flex items-center gap-3">
+                                        <h3 class="text-2xl font-black text-slate-800" x-text="supplier.name"></h3>
+                                        <span class="px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter"
+                                              :class="supplier.package === 'Platinum' ? 'bg-blue-600 text-white' : 'bg-yellow-400 text-yellow-900'"
+                                              x-text="supplier.package"></span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-1 font-inter font-bold" x-text="supplier.id"></p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Overall Fulfillment</div>
+                                <div class="text-3xl font-black text-blue-600 font-inter" x-text="calculateProgress(supplier) + '%' text-right"></div>
+                            </div>
+                        </div>
+
+                        <!-- Progress Matrix -->
+                        <div class="p-0 overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-white border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+                                    <tr>
+                                        <th class="px-8 py-4">Benefit Checklist</th>
+                                        <th class="px-8 py-4 text-center">Annual Quota</th>
+                                        <th class="px-8 py-4 text-center">Executed</th>
+                                        <th class="px-8 py-4 text-center">Remaining</th>
+                                        <th class="px-8 py-4">Fulfillment Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50">
+                                    <template x-for="item in supplier.quotas" :key="item.label">
+                                        <tr class="hover:bg-slate-50 transition-colors">
+                                            <td class="px-8 py-5">
+                                                <div class="font-bold text-slate-700" x-text="item.label"></div>
+                                                <div class="text-[10px] text-slate-400 italic" x-text="item.sub"></div>
+                                            </td>
+                                            <td class="px-8 py-5 text-center font-inter font-bold text-slate-400" 
+                                                x-text="item.isCurrency ? '฿' + item.total.toLocaleString() : item.total"></td>
+                                            <td class="px-8 py-5 text-center">
+                                                <div class="inline-flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-1">
+                                                    <button @click="if(item.used > 0) item.used -= (item.isCurrency ? 500 : 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 flex items-center justify-center">-</button>
+                                                    <span class="font-inter font-black px-2 min-w-[40px] text-center" x-text="item.isCurrency ? '฿' + item.used.toLocaleString() : item.used"></span>
+                                                    <button @click="if(item.used < item.total) item.used += (item.isCurrency ? 500 : 1)" class="w-6 h-6 rounded bg-blue-100 text-blue-600 hover:bg-blue-200 flex items-center justify-center">+</button>
+                                                </div>
+                                            </td>
+                                            <td class="px-8 py-5 text-center font-inter font-black text-xl" 
+                                                :class="item.total - item.used === 0 ? 'text-slate-200' : 'text-emerald-500'"
+                                                x-text="item.isCurrency ? '฿' + (item.total - item.used).toLocaleString() : (item.total - item.used)"></td>
+                                            <td class="px-8 py-5 w-48">
+                                                <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-blue-600 transition-all duration-500" :style="'width: ' + (item.used/item.total*100) + '%'"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Tab 3: Performance Report -->
+        <div x-show="activeTab === 'report'" x-cloak x-transition>
+            <div class="max-w-4xl mx-auto bg-white p-16 rounded-[3rem] shadow-2xl border border-slate-100">
+                <div class="flex justify-between items-start border-b-4 border-slate-900 pb-8 mb-10">
+                    <div>
+                        <h2 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">ANNUAL<br>PERFORMANCE</h2>
+                        <p class="text-slate-400 mt-4 text-lg font-medium italic">สรุปภาพรวมการตลาดสำหรับพันธมิตรคู่ค้า</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-black text-slate-800 uppercase">TOA Paint</div>
+                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Platinum Tier Partner</div>
+                    </div>
+                </div>
+
+                <!-- Simple Stats -->
+                <div class="grid grid-cols-3 gap-6 mb-12">
+                    <div class="p-8 rounded-[2rem] bg-slate-900 text-white">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Total Reach</div>
+                        <div class="text-3xl font-black font-inter tracking-tighter">1,240,000</div>
+                    </div>
+                    <div class="p-8 rounded-[2rem] bg-blue-50 border border-blue-100">
+                        <div class="text-[10px] text-blue-600 font-bold uppercase mb-1">Booth Visitors</div>
+                        <div class="text-3xl font-black font-inter tracking-tighter">45,600</div>
+                    </div>
+                    <div class="p-8 rounded-[2rem] bg-emerald-50 border border-emerald-100">
+                        <div class="text-[10px] text-emerald-600 font-bold uppercase mb-1">Conversion Impact</div>
+                        <div class="text-3xl font-black font-inter tracking-tighter">฿5.2M</div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 rounded-[2rem] p-10 text-center border-2 border-dashed border-slate-200">
+                    <i data-lucide="file-text" class="w-12 h-12 text-slate-300 mx-auto mb-4"></i>
+                    <p class="text-slate-500 font-medium">กดปุ่มด้านล่างเพื่อส่งไฟล์รายงานความคืบหน้าแบบละเอียดให้ซัพพลายเออร์</p>
+                    <button class="mt-6 bg-slate-900 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-600 transition shadow-xl">Send Report via LINE</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
